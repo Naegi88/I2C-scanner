@@ -24,7 +24,8 @@
 /* Function prototypes */
 static void setup(void);
 
-uint32_t test = 0;
+uint8_t address = 0;
+uint8_t yaxe = 0;
 
 static void setup(void)
 {
@@ -40,7 +41,7 @@ int main(void)
 	
 	/* Backlight pin PL3, set as output, set high for 100% output */
 	DDRB |= (1<<PB2);
-	PORTB |= (1<<PB2);
+	PORTB &= ~(1<<PB2);
 	//PORTB &= ~(1<<PB2);
 	 
 	DDRD &= ~((1<<PD6) | (1<<PD2) | (1<<PD5)); 	//Taster 1-3
@@ -60,10 +61,6 @@ int main(void)
 
     TCCR1B |= (1 << CS12) | (1 << CS10);
     // set prescaler to 1024 and start the timer
-
-    sei();
-    // enable interrupts
-	
 	
 	
 	
@@ -71,27 +68,33 @@ int main(void)
 	
 	glcd_clear();
 	glcd_write();
+	TWIInit();
+	
 	
 	glcd_tiny_set_font(Font5x7,5,7,32,127);
 	glcd_clear_buffer();
 	
-	TWIInit();
-	
-	EEWriteWord(0,6902);
-	
-	test = EEReadWord(0);
-	
-	sprintf(string,"%01lu",test);
-	glcd_draw_string_xy(0,0,string);
-
+	glcd_write();
 	
 	
-	
-	
-	while(1) 
-	{	
+	while(address < 256) 
+	{	TWIStart();
+		TWIWrite(address);
+		if (TWIGetStatus() == 0x18)
+		{
+			sprintf(string,"0x%x",address);
+			glcd_draw_string_xy(0,yaxe,string);
+			yaxe += 8;
+		}
+		TWIStop();
+		address++;
+		
 		glcd_write();
 	}//End of while
+	while(1)
+	{
+	}
+	
 	
 	return 0;
 }//end of main
