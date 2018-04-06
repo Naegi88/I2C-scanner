@@ -1,12 +1,17 @@
-  /*
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//		Silvan Nägeli
+//	
+//		06.04.2018
+//
+//		main.c / I2C-scanner
+//
+//		github: https://github.com/Naegi88
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Demo of glcd library with AVR8 microcontroller
-	
-	Tested on a custom made PCB (intended for another project)
 
-	See ../README.md for connection details
 
-*/
 
 #include <avr/io.h>
 #include "glcd/glcd.h"
@@ -20,20 +25,15 @@
 
 #define F_CPU 16000000UL  // 1 MHz
 
+	
 
-/* Function prototypes */
-static void setup(void);
-
-uint8_t address = 0;
-uint8_t yaxe = 0;
-
-static void setup(void)
-{
-	/* Set up glcd, also sets up SPI and relevent GPIO pins */
-	glcd_init();
-}
 
 char string[30] = "";
+
+// Variabeln Deklarieren
+uint8_t address = 0;			
+uint8_t yaxe = 0;
+uint8_t i = 0;
 
 int main(void)
 {
@@ -41,47 +41,31 @@ int main(void)
 	
 	/* Backlight pin PL3, set as output, set high for 100% output */
 	DDRB |= (1<<PB2);
-	PORTB &= ~(1<<PB2);
+	PORTB |= (1<<PB2);
 	//PORTB &= ~(1<<PB2);
-	 
+	
 	DDRD &= ~((1<<PD6) | (1<<PD2) | (1<<PD5)); 	//Taster 1-3
 	PORTD |= ((1<<PD6) | (1<<PD2) | (1<<PD5)); 	//PUllups für Taster einschalten
 	
-	DDRD &= ~(1<<PD4); //T0 Counter Input
-	TCCR0B |= (1<<CS02) | (1<<CS01) | (1<<CS00);//Counter 0 enabled clock on rising edge
-	
-	//Timer 1 Configuration
-	OCR1A = 0x009C;	//OCR1A = 0x3D08;==1sec
-	
-    TCCR1B |= (1 << WGM12);
-    // Mode 4, CTC on OCR1A
-
-    TIMSK1 |= (1 << OCIE1A);
-    //Set interrupt on compare match
-
-    TCCR1B |= (1 << CS12) | (1 << CS10);
-    // set prescaler to 1024 and start the timer
-	
-	
-	
-	setup();
-	
+	// Init 
+	glcd_init();
 	glcd_clear();
 	glcd_write();
-	TWIInit();
+	TWIInit();	
 	
-	
+	// lcd schrift wählen
 	glcd_tiny_set_font(Font5x7,5,7,32,127);
 	glcd_clear_buffer();
 	
-	glcd_write();
 	
 	
-	while(address < 256) 
+	// Suchprozes
+	for(i = 0; i < 255;i++)
 	{	TWIStart();
 		TWIWrite(address);
 		if (TWIGetStatus() == 0x18)
 		{
+			delay_ms(100);
 			sprintf(string,"0x%x",address);
 			glcd_draw_string_xy(0,yaxe,string);
 			yaxe += 8;
@@ -93,8 +77,8 @@ int main(void)
 	}//End of while
 	while(1)
 	{
+		
 	}
-	
 	
 	return 0;
 }//end of main
