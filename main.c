@@ -1,15 +1,14 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//		Silvan Nägeli
-//	
-//		06.04.2018
-//
-//		main.c / I2C-scanner
-//
-//		github: https://github.com/Naegi88
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////////////////////////////////////////////
+//																				   //
+//		Silvan Nägeli															   //
+//																				   //
+//		06.04.2018																   //
+//																				   //
+//		main.c / I2C-scanner													   //
+//																				   //
+//		github: https://github.com/Naegi88										   //
+//																				   //
+/////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -41,7 +40,7 @@ int main(void)
 	
 	/* Backlight pin PL3, set as output, set high for 100% output */
 	DDRB |= (1<<PB2);
-	PORTB |= (1<<PB2);
+
 	//PORTB &= ~(1<<PB2);
 	
 	DDRD &= ~((1<<PD6) | (1<<PD2) | (1<<PD5)); 	//Taster 1-3
@@ -60,7 +59,7 @@ int main(void)
 	
 	
 	// Suchprozes
-	for(i = 0; i < 255;i++)
+	while(i < 255)
 	{	TWIStart();
 		TWIWrite(address);
 		if (TWIGetStatus() == 0x18)
@@ -72,12 +71,14 @@ int main(void)
 		}
 		TWIStop();
 		address++;
+		i++;
 		
 		glcd_write();
 	}//End of while
+	
 	while(1)
 	{
-		
+			PORTB |= (1<<PB2);
 	}
 	
 	return 0;
